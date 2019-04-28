@@ -86,4 +86,3 @@ for t in range(0, len(df[df.columns[0]])):
 end = time.time()
 print("Finished calculation in ", (end - start), "seconds.")
 print("Type gradients[t] for the gradients at any time t.")
-            
