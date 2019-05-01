@@ -24,7 +24,7 @@ void loop(void) {
 
   Serial.print(thermistor0Value);
   Serial.print(",");
-  /*Serial.print(thermistor1Value);*/
+  Serial.print(thermistor1Value);
   Serial.println();
   delay(1000);
 

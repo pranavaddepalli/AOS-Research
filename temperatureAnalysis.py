@@ -10,11 +10,11 @@ Created on Sun Apr 21 22:02:18 2019
 
 import pandas as pd
 import matplotlib.pyplot as plt
-import os
-import imageio
+import time
 
 from scipy import stats
-from mpl_toolkits import mplot3d
+from mpl_toolkits.mplot3d import Axes3D
+
 
 #%% Setup
 
@@ -32,9 +32,11 @@ print("Shape of dataset: ", df.shape)
 df[df < 0] = 0
 
 #drop data from useless thermistors (optional)
+'''
 df = df.drop(df.columns[2], axis=1)
 df = df.drop(df.columns[2], axis=1)
 df = df.drop(df.columns[4], axis=1)
+'''
 print("Cut columns and replaced negatives")
 
 #print new format of dataframe
@@ -58,11 +60,14 @@ print("P-value: ", p_value)
 '''
 Gradient calculation for each of the points
 '''
-print("Calculating gradients...")
+print("Calculating gradients.")
+start = time.time()
+#store x and y coordinates for each point in mm
+x_positions = [70, 55, 32.4, 24, 0, -22.5, -45, -72.5]
+y_positions = [-70, 56, -41.8, 15, -12, 33, -48, 56]
+x_positions = [x / 25.4 for x in x_positions]
+y_positions = [y / 25.4 for y in y_positions]
 
-#store x and y coordinates for each point
-x_positions = [1, 2, 3, 4, 5]
-y_positions = [1, 2, 3, 4, 5]
 
 #Function for gradient calculation between points in 3D
 def gradient(point_one, point_two):
@@ -78,19 +83,16 @@ def gradient(point_one, point_two):
 gradients = {}
 
 for t in range(0, len(df[df.columns[0]])):
-    gradients_at_time = []
-
+    gradients_at_time = {}
     #List of temperatures at time t
     temperatures = df.iloc[t].values.tolist()
+    print("Epoch {}.".format(t))
     
-    #Visualizing temperature distribution
+    #graph
     fig = plt.figure()
     ax = plt.axes(projection='3d')
-    ax.set_zbound(lower=0, upper=60)
     ax.scatter3D(x_positions, y_positions, temperatures)
-    plt.savefig('images/output' + str(t) + '.png')
     plt.close()
-    
     #List of points at time t
     points = []
     for x, y, temp in list(zip(x_positions, y_positions, temperatures)):
@@ -100,33 +102,20 @@ for t in range(0, len(df[df.columns[0]])):
     for point in points:
         for next_point in points[1:] + [points[0]]:
             if point != next_point:
-                gradients_at_time.append(gradient(point, next_point))
-    
+                
+                gradients_at_time[str(points.index(point) + 1) + " to " + str(points.index(next_point) + 1)] = gradient(point, next_point)  
     
     gradients[t] = gradients_at_time
 
-print("Finished calculation. Use gradients[t] for the gradients at any time t.")
 
-#%% Making a gif
-
-filenames = os.listdir("images")
-
-with imageio.get_writer('flow.gif', mode='I') as writer:
-    for filename in filenames:
-        image = imageio.imread(filename)
-        writer.append_data(image)
-
+end= time.time()
+print("Finished calculation in {} seconds".format(end - start))
 
 
 
 
 #%% Gradient Analysis
-print(gradients[0])
 
-
-
-
-
-
-
+for points, gradient in gradients[0].items():
+    print(points, "|", gradient)
 
