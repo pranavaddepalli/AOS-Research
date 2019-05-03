@@ -28,22 +28,6 @@ df = pd.read_csv("Pranav_10percentLines.csv")
 #printing initial format of dataframe
 print("Shape of dataset: ", df.shape)
 
-#replace negative values (not possible) with 0
-df[df < 0] = 0
-
-#drop data from useless thermistors (optional)
-df = df.drop(df.columns[2], axis=1)
-df = df.drop(df.columns[2], axis=1)
-df = df.drop(df.columns[4], axis=1)
-
-print("Cut columns and replaced negatives")
-
-#print new format of dataframe
-print("New shape of dataset: ", df.shape)
-
-#save dataframe as pickle for later
-df.to_pickle("10_percent_dataframe.pickle")
-
 #%% ANOVA Test
 '''
 Running an ANOVA test to find if the temperatures are 

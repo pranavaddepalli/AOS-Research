@@ -14,7 +14,7 @@ import time
 
 
 #%% Recreate dataset
-df = pd.read_pickle("10_percent_dataframe.pickle")
+df = pd.read_pcsv("Pranav_10percentLines.csv")
 
 
 #%% Calculate sigma
