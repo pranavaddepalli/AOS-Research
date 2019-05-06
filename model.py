@@ -82,9 +82,9 @@ normalized:
     50 is 1
 '''
 
-ten_data,ten_temps = preprocess(ten_percent, 0)
+ten_data,ten_temps = preprocess(ten_percent, 10)
 
-twenty_data, twenty_temps = preprocess(twenty_percent, 0.2)
+twenty_data, twenty_temps = preprocess(twenty_percent, 20)
 
 data = np.concatenate((ten_data, twenty_data))
 temperatures = np.concatenate((ten_temps, twenty_temps))
@@ -105,20 +105,27 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint("cp.ckpt",
 
 model = tf.keras.Sequential()
 #input
-model.add(layers.Dense(64, input_dim=4, activation='relu'))
+model.add(layers.Dense(4, input_dim=4))
+model.add(layers.LeakyReLU(alpha=0.05))
 #hidden layer 1
-model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dense(64))
+model.add(layers.LeakyReLU(alpha=0.05))
 #hidden layer 2
-model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dense(32))
+model.add(layers.LeakyReLU(alpha=0.05))
+#hidden layer 3
+model.add(layers.Dense(4))
+model.add(layers.LeakyReLU(alpha=0.05))
 #output layer
-model.add(layers.Dense(1, activation='relu'))
+model.add(layers.Dense(1))
+model.add(layers.LeakyReLU(alpha=0.05))
+
 
 model.compile(optimizer=tf.keras.optimizers.Adam(lr=0.00001), #adam optimizer
               loss='mse', #mean squared error
               metrics=['mae']) #mean absolute error
 
 print("Model built!")
-print(model.summary())
 
 
 #%% Training
@@ -128,6 +135,5 @@ model.fit(x=x_train,
           epochs=72, 
           validation_data= (x_test, y_test),
           callbacks = [cp_callback])
-
 #%% Save
 model.save('model.h5')
