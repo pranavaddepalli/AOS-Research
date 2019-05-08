@@ -69,6 +69,8 @@ def preprocess(raw_data, infill):
 
 
 #%% Creating dataset and splitting
+    
+    
 ten_percent = np.delete(np.genfromtxt('Pranav_10percentLines.txt', delimiter=','), [2, 3, 6], 1)
 twenty_percent = np.genfromtxt('20pLines.csv', delimiter=',')[:,:-1]
 
@@ -82,9 +84,9 @@ normalized:
     50 is 1
 '''
 
-ten_data,ten_temps = preprocess(ten_percent, 10)
+ten_data,ten_temps = preprocess(ten_percent, 0)
 
-twenty_data, twenty_temps = preprocess(twenty_percent, 20)
+twenty_data, twenty_temps = preprocess(twenty_percent, .25)
 
 data = np.concatenate((ten_data, twenty_data))
 temperatures = np.concatenate((ten_temps, twenty_temps))
@@ -102,7 +104,6 @@ print("Split into training and testing - 0.2 test size")
 cp_callback = tf.keras.callbacks.ModelCheckpoint("cp.ckpt", 
                                                  verbose=1,
                                                  period=10)
-
 model = tf.keras.Sequential()
 #input
 model.add(layers.Dense(4, input_dim=4))
@@ -117,23 +118,28 @@ model.add(layers.LeakyReLU(alpha=0.05))
 model.add(layers.Dense(4))
 model.add(layers.LeakyReLU(alpha=0.05))
 #output layer
-model.add(layers.Dense(1))
-model.add(layers.LeakyReLU(alpha=0.05))
+model.add(layers.Dense(1, activation='linear'))
 
 
+def rmse(y_true, y_pred):
+        return tf.keras.backend.sqrt(tf.keras.backend.mean(tf.keras.backend.square(y_pred - y_true)))
+    
 model.compile(optimizer=tf.keras.optimizers.Adam(lr=0.00001), #adam optimizer
               loss='mse', #mean squared error
-              metrics=['mae']) #mean absolute error
+              metrics=['mape', 'mae', rmse]) #mean absolute error
 
 print("Model built!")
 
 
 #%% Training
-model.fit(x=x_train,
+history = model.fit(x=x_train,
           y=y_train, 
           batch_size=32, 
-          epochs=72, 
+          epochs=1000, 
           validation_data= (x_test, y_test),
           callbacks = [cp_callback])
 #%% Save
 model.save('model.h5')
+
+#%% Plot
+
