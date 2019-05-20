@@ -60,6 +60,9 @@ def point(raw, row, col):
         y = 56
     return n, x, y, temperature
 
+# fixing data for 10% infill
+#raw_10_percent = np.delete(raw_10_percent,[2,3,6],1)
+
 # shape of data: (infill, time, thermistor) ==> x,y,temperature
 system = np.zeros(shape = (3, len(raw_30_percent) + len(raw_20_percent) + len(raw_10_percent), 8), dtype='O')
 
@@ -72,8 +75,6 @@ for i in range(0,30, 10):
             system[int(i / 10), row, n] = (x, y, temperature)
     print("Done!")
 
-# fixing data for 10% infill
-raw_10_percent = np.delete(raw_10_percent,[2,3,6],1)
 
 
 
@@ -98,7 +99,9 @@ def center(points):
     global equilibrium
     global x_graph_list
     global y_graph_list
-    weighted_mean_temp = (sum(((((point[0] - equilibrium[0])**2) + ((point[1] - equilibrium[1])**2))**0.5) * point[2] for point in points))    
+    weighted_mean_temp = sum((((((p[0] - equilibrium[0])**2) + 
+                                ((p[1] - equilibrium[1])**2))**0.5) 
+                                * p[2]) for p in points)    
     tmpKieran = (sum(((((point[0] - equilibrium[0])**2) + ((point[1] - equilibrium[1])**2))**0.5) for point in points))
     weighted_mean_temp = weighted_mean_temp / tmpKieran
     
@@ -175,14 +178,15 @@ plt.show()
 
 
 #VECTORS
+'''
 for GRAPHING_INFILL in range(0, 3):
     figs.append(plt.figure())
     origin = [equilibrium[0]], [equilibrium[1]]
     vectors = np.array( [ gradient[0], gradient[1] ] for gradient in gradients[GRAPHING_INFILL] )
     plt.subplot(111)
     ax = plt.gca()
-    
-
+ 
+'''
 
 # animation
 '''
@@ -210,15 +214,41 @@ ani.save('20_percent_animation.mp4', writer=writer)
 
 #%% STATISTICS
 import scipy.stats as stats
-ten_gradients = [value[3] for value in gradients[0] ]
 
+#STANDARD DEVIATION OF CENTERS
+
+print("Standard Deviation of Temperature Centers:")
+
+x_std_ten = np.std(x_graph_list[0])
+y_std_ten = np.std(y_graph_list[0])
+print("Ten percent: \n")
+print("STD in X: {} \nSTD in Y: {}".format(x_std_ten,y_std_ten))
+print("STD of event (X+Y): {}\n--------------------".format(( (x_std_ten**2) + (y_std_ten**2))**0.5))
+
+x_std_twenty = np.std(x_graph_list[1])
+y_std_twenty = np.std(y_graph_list[1])
+print("Twenty percent: \n")
+print("STD in X: {} \nSTD in Y: {}".format(x_std_twenty,y_std_twenty))
+print("STD of event (X+Y): {}\n--------------------".format(( (x_std_twenty**2) + (y_std_twenty**2))**0.5))
+
+x_std_thirty = np.std(x_graph_list[2])
+y_std_thirty = np.std(y_graph_list[2])
+print("Thirty percent: \n")
+print("STD in X: {} \nSTD in Y: {}".format(x_std_thirty,y_std_thirty))
+print("STD of event (X+Y): {}\n--------------------".format(( (x_std_thirty**2) + (y_std_thirty**2))**0.5))
+
+
+##GRADIENTS
+ten_gradients = [value[3] for value in gradients[0] ]
 twenty_gradients = [value[3] for value in gradients[1] ]
 thirty_gradients = [value[3] for value in gradients[2] ]
+anova_statistic, anova_pvalue = stats.f_oneway(ten_gradients, twenty_gradients, thirty_gradients)
+statistic_20_30, pvalue_20_30 = stats.ttest_ind(twenty_gradients, thirty_gradients, equal_var=False)
 
-print(stats.f_oneway(ten_gradients, twenty_gradients, thirty_gradients))
-
-
-
+print("ANOVA TEST:\n-------------------- \nStatistic: {} \np-value: {}\n".format(anova_statistic, anova_pvalue))
+print("Two-Sample T Test for Independence with unequal variances:\n--------------------")
+#print("10% to 30%:\n--------------------\nStatistic: {} \np-value: {}".format(statistic_10_20, pvalue_10_20))
+print("20% to 30%:\n--------------------\nStatistic: {} \np-value: {}".format(statistic_20_30, pvalue_20_30))
 #%% PRINTING DATA
 import pandas as pd
 thirtydf = pd.DataFrame(gradients[2], columns =['X', 'Y', 'Mean Temperature', 'Gradient from Equilibrium', 'Angle'], dtype = float) 
