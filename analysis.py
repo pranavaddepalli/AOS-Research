@@ -8,6 +8,7 @@ Created on Sun May 19 12:59:39 2019
 import numpy as np 
 import os
 import matplotlib.pyplot as plt
+
 import matplotlib.animation as animation
 from matplotlib.animation import FuncAnimation
 
@@ -91,6 +92,7 @@ raw_10_percent = np.delete(raw_10_percent,[2,3,6],1)
     
 x_graph_list = [[] for i in range(3)]
 y_graph_list = [[] for i in range(3)]
+avgTemp_graph_list = [[] for i in range(3)]
 equilibrium = (5.175, 10.525, 0)
 def center(points):
     global equilibrium
@@ -114,6 +116,7 @@ for infill in range(0, 3):
             x, y, temperature_mean = center(time)
             x_graph_list[infill].append(x)
             y_graph_list[infill].append(y)
+            avgTemp_graph_list[infill].append(temperature_mean)
             centers[infill].append((x, y, temperature_mean))
         else: break
     print("Done!")
@@ -205,7 +208,25 @@ ani.save('20_percent_animation.mp4', writer=writer)
 '''
 
 
-    
-    
-    
-    
+#%% STATISTICS
+import scipy.stats as stats
+ten_gradients = [value[3] for value in gradients[0] ]
+
+twenty_gradients = [value[3] for value in gradients[1] ]
+thirty_gradients = [value[3] for value in gradients[2] ]
+
+print(stats.f_oneway(ten_gradients, twenty_gradients, thirty_gradients))
+
+
+
+#%% PRINTING DATA
+import pandas as pd
+thirtydf = pd.DataFrame(gradients[2], columns =['X', 'Y', 'Mean Temperature', 'Gradient from Equilibrium', 'Angle'], dtype = float) 
+
+writer = pd.ExcelWriter("thirtydf.xlsx")
+thirtydf.to_excel(writer, 'Sheet1')
+writer.save()
+
+#pd.DataFrame(list(zip(x_graph_list[1], y_graph_list[1], avgTemp_graph_list[1])), columns =['X', 'Y', 'Temperature'])
+
+ 
