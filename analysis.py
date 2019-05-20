@@ -14,8 +14,8 @@ from matplotlib.animation import FuncAnimation
 np.set_printoptions(precision=3, suppress=True)
 
 base_dir = os.getcwd()
-data_dir = base_dir + "\Data\\"
-image_dir = base_dir + "\Images\\"
+data_dir = base_dir + "/Data/"
+image_dir = base_dir + "/Images/"
 print("Working Directory: {}. \nData Directory: {}".format(base_dir, data_dir))
 
 raw_10_percent = np.genfromtxt(data_dir + '10pLines', delimiter=',')
@@ -71,6 +71,11 @@ for i in range(0,30, 10):
             system[int(i / 10), row, n] = (x, y, temperature)
     print("Done!")
 
+# fixing data for 10% infill
+raw_10_percent = np.delete(raw_10_percent,[2,3,6],1)
+
+
+
 #%% HEAT MAP GENERATION
 
 
@@ -84,14 +89,17 @@ for i in range(0,30, 10):
 # sum of all (temperature / distance from equilibrium)
     
     
-x_graph_list = [[] for _ in range(3)]
-y_graph_list = [[] for _ in range(3)]
+x_graph_list = [[] for i in range(3)]
+y_graph_list = [[] for i in range(3)]
 equilibrium = (5.175, 10.525, 0)
 def center(points):
     global equilibrium
     global x_graph_list
     global y_graph_list
-    weighted_mean_temp = sum([point[2] for point in points]) / 8
+    weighted_mean_temp = (sum(((((point[0] - equilibrium[0])**2) + ((point[1] - equilibrium[1])**2))**0.5) * point[2] for point in points))    
+    tmpKieran = (sum(((((point[0] - equilibrium[0])**2) + ((point[1] - equilibrium[1])**2))**0.5) for point in points))
+    weighted_mean_temp = weighted_mean_temp / tmpKieran
+    
     #weighted_mean_temp = sum((point[2] / ((point[0] - equilibrium[0])**2) + ((point[1] - equilibrium[0])**2)) for point in points)
     x = sum([point[0] * point[2] for point in points]) / sum([point[2] for point in points])
     y = sum([point[1] * point[2] for point in points]) / sum([point[2] for point in points])
@@ -136,57 +144,67 @@ plt.xlim(-0, 15)
 plt.ylim(-0, 15)
 plt.scatter(x_graph_list[1], y_graph_list[1], s=1)
 '''
-#ANIMATION
-plt.subplot(111)
-plt.plot(equilibrium[0], equilibrium[1], "or", label="Equilibrium Point")
-plt.xlim(2.5, 15)
-plt.ylim(2.5, 15)
-plt.ylabel("Y position (mm)")
-plt.xlabel("X position (mm)")
-plt.title("20% infill animation: Movement of center of temperature over time")
-graph = plt.scatter([], [])
-def animate(i):
-    if i > len(x_graph_list[1]) - 1:
-        i = len(x_graph_list[1]) -1
-    graph.set_offsets(np.vstack((x_graph_list[1][:i+1], y_graph_list[1][:i+1])).T)
-    graph.set_sizes(np.ones(len(x_graph_list)))
-    return graph
-ani = FuncAnimation(fig, animate, frames=len(x_graph_list[1]), interval=.00001)
+#%%VISUALIZATION
 
-plt.rcParams['animation.ffmpeg_path'] = 'F:\Program Files\FFmpeg\ffmpeg-20190518-c61d16c-win64-static\bin'
 
-Writer = animation.writers['ffmpeg']
-writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
+# CENTERS
+figs = []
 
-ani.save('20_percent_animation.mp4', writer=writer)
+for GRAPHING_INFILL in range(0, 3) :
+    
+    figs.append(plt.figure())
+    
+    plt.subplot(111)
+    ax = plt.gca()
+    ax.scatter(x_graph_list[GRAPHING_INFILL], y_graph_list[GRAPHING_INFILL], s=1)
+    ax.plot(equilibrium[0], equilibrium[1], "or")
+    plt.ylabel("Y position (mm)")
+    plt.xlabel("X position (mm)")
+    plt.title("Temperature Centers for {}% infill".format(format((GRAPHING_INFILL + 1)*10)))
+    
+
+
 plt.show()
-
-
-'''
-ax = plt.gca()
-ax.scatter(x_graph_list[1], y_graph_list[1], s=1)
-ax.plot(equilibrium[0], equilibrium[1], "or")
 
 #soa = np.array([[equilibrium[0], equilibrium[1], gradients[0][0][0], gradients[0][0][1]]])
 #X, Y, U, V = zip(*soa)
 #ax.quiver(X, Y, U, V, angles='xy', scale_units='xy', scale=1)
 
 
-ax.set_xlim([-100, 100])
-ax.set_ylim([-100, 100])
+#VECTORS
+for GRAPHING_INFILL in range(0, 3):
+    figs.append(plt.figure())
+    origin = [equilibrium[0]], [equilibrium[1]]
+    vectors = np.array( [ gradient[0], gradient[1] ] for gradient in gradients[GRAPHING_INFILL] )
+    plt.subplot(111)
+    ax = plt.gca()
+    
+
+
+# animation
+'''
+anim = plt.figure()
+plt.subplot(111)
+plt.plot(equilibrium[0], equilibrium[1], "or", label="Equilibrium Point")
+plt.ylabel("Y position (mm)")
+plt.xlabel("X position (mm)")
+plt.title("20% infill animation: Movement of center of temperature over time")
+graph = plt.scatter([], [])
+def animate(i):
+    if i > len(x_graph_list[GRAPHING_INFILL]) - 1:
+        i = len(x_graph_list[GRAPHING_INFILL]) -1
+    graph.set_offsets(np.vstack((x_graph_list[GRAPHING_INFILL][:i+1], y_graph_list[GRAPHING_INFILL][:i+1])).T)
+    graph.set_sizes(np.ones(len(x_graph_list)))
+    return graph
+ani = FuncAnimation(anim, animate, frames=len(x_graph_list[GRAPHING_INFILL]), interval=.00000001)
+
+Writer = animation.writers['ffmpeg']
+writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
+
+ani.save('20_percent_animation.mp4', writer=writer)
 '''
 
 
-plt.show()
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
