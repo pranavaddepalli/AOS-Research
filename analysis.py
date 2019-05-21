@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun May 19 12:59:39 2019
-
 @author: pranavaddepalli
 """
 #%% SETUP and LOAD RAW DATA
 import numpy as np 
 import os
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 import matplotlib.animation as animation
 from matplotlib.animation import FuncAnimation
@@ -16,7 +16,6 @@ np.set_printoptions(precision=3, suppress=True)
 
 base_dir = os.getcwd()
 data_dir = base_dir + "/Data/"
-image_dir = base_dir + "/Images/"
 print("Working Directory: {}. \nData Directory: {}".format(base_dir, data_dir))
 
 raw_10_percent = np.genfromtxt(data_dir + '10pLines', delimiter=',')
@@ -66,19 +65,70 @@ def point(raw, row, col):
 # shape of data: (infill, time, thermistor) ==> x,y,temperature
 system = np.zeros(shape = (3, len(raw_30_percent) + len(raw_20_percent) + len(raw_10_percent), 8), dtype='O')
 
+hm_x = [[] for _ in range(3)] 
+hm_y = [[] for _ in range(3)]
+hm_t = [[] for _ in range(3)]
+hm_temp = [[] for _ in range(3)]
+
 for i in range(0,30, 10):
     infill = globals()['raw_' + str(i + 10) + '_percent']
     print("Creating points for {}% infill...".format(i + 10), end="", flush=True)
     for col in range(0, np.size(infill, axis=1)):
         for row in range(0, np.size(infill, axis=0)):
             n, x, y, temperature = point(infill, row, col)
+            hm_x[int(i / 10)].append(x)
+            hm_y[int(i / 10)].append(y)
+            hm_t[int(i / 10)].append(row)
+            hm_temp[int(i / 10)].append(temperature)
             system[int(i / 10), row, n] = (x, y, temperature)
     print("Done!")
 
+#%% graphics for poster
+plt.plot(hm_t[1], raw_20_percent[:, 0])
+plt.plot(hm_t[1], raw_20_percent[:, 0])
+plt.plot(hm_t[1], raw_20_percent[:, 0])
+plt.plot(hm_t[1], raw_20_percent[:, 0])
+plt.plot(hm_t[1], raw_20_percent[:, 0])
+plt.plot(hm_t[1], raw_20_percent[:, 0])
+plt.plot(hm_t[1], raw_20_percent[:, 0])
+plt.plot(hm_t[1], raw_20_percent[:, 0])
 
 
 
 #%% HEAT MAP GENERATION
+##HEAT MAP
+    '''
+from matplotlib import cm
+plt.style.use('classic')
+
+hm20 = plt.figure()
+ax = hm20.gca(projection='3d')
+ax.scatter(hm_x[1], hm_y[1], hm_t[1], c=hm_temp[1], lw=0, s=10)
+
+asdf, jkl = np.meshgrid(hm_x[1], hm_y[1], sparse=True)
+fdsa, lkj = np.meshgrid(hm_t[1], hm_temp[1], sparse=True)
+for t in range(0, len(hm_t[1])):
+    surf = ax.plot_surface(np.asarray(asdf), np.asarray(jkl), np.asarray(lkj))
+
+hm_x_twenty = [[] for _ in range(len(system[0]))] 
+hm_y_twenty = [[] for _ in range(len(system[0]))] 
+hm_t_twenty = [[] for _ in range(len(system[0]))] 
+hm_temp_twenty = [[] for _ in range(len(system[0]))] 
+
+for t in range(0, len(system[0])):
+    for p in system[1][t]:
+        hm_x_twenty[t].append(p[0])
+        hm_y_twenty[t].append(p[1])
+        hm_t_twenty[t].append(t)
+        hm_temp_twenty[t].append(p[2])
+
+for t in range(0, len(hm_t_twenty)):
+    surf = ax.plot_trisurf(hm_x_twenty, hm_y_twenty, hm_t_twenty)
+    
+cmap = cm.get_cmap('PiYG', 11)
+img = ax.scatter(hm_x[1], hm_y[1], hm_t[1], c=hm_temp[1], cmap=cmap)
+cbar = hm20.colorbar(img, boundaries=[0, 10, 20, 30])
+'''
 
 
 
@@ -153,6 +203,11 @@ plt.scatter(x_graph_list[1], y_graph_list[1], s=1)
 #%%VISUALIZATION
 
 
+
+
+
+
+
 # CENTERS
 figs = []
 
@@ -204,10 +259,8 @@ def animate(i):
     graph.set_sizes(np.ones(len(x_graph_list)))
     return graph
 ani = FuncAnimation(anim, animate, frames=len(x_graph_list[GRAPHING_INFILL]), interval=.00000001)
-
 Writer = animation.writers['ffmpeg']
 writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
-
 ani.save('20_percent_animation.mp4', writer=writer)
 '''
 
@@ -221,21 +274,18 @@ print("Standard Deviation of Temperature Centers:")
 
 x_std_ten = np.std(x_graph_list[0])
 y_std_ten = np.std(y_graph_list[0])
-print("Ten percent: \n")
+print("\nTen percent: \n")
 print("STD in X: {} \nSTD in Y: {}".format(x_std_ten,y_std_ten))
-print("STD of event (X+Y): {}\n--------------------".format(( (x_std_ten**2) + (y_std_ten**2))**0.5))
 
 x_std_twenty = np.std(x_graph_list[1])
 y_std_twenty = np.std(y_graph_list[1])
-print("Twenty percent: \n")
+print("\nTwenty percent:\n")
 print("STD in X: {} \nSTD in Y: {}".format(x_std_twenty,y_std_twenty))
-print("STD of event (X+Y): {}\n--------------------".format(( (x_std_twenty**2) + (y_std_twenty**2))**0.5))
 
 x_std_thirty = np.std(x_graph_list[2])
 y_std_thirty = np.std(y_graph_list[2])
-print("Thirty percent: \n")
+print("\nThirty percent: \n")
 print("STD in X: {} \nSTD in Y: {}".format(x_std_thirty,y_std_thirty))
-print("STD of event (X+Y): {}\n--------------------".format(( (x_std_thirty**2) + (y_std_thirty**2))**0.5))
 
 
 ##GRADIENTS
@@ -245,7 +295,7 @@ thirty_gradients = [value[3] for value in gradients[2] ]
 anova_statistic, anova_pvalue = stats.f_oneway(ten_gradients, twenty_gradients, thirty_gradients)
 statistic_20_30, pvalue_20_30 = stats.ttest_ind(twenty_gradients, thirty_gradients, equal_var=False)
 
-print("ANOVA TEST:\n-------------------- \nStatistic: {} \np-value: {}\n".format(anova_statistic, anova_pvalue))
+print("\nANOVA TEST:\n-------------------- \nStatistic: {} \np-value: {}\n".format(anova_statistic, anova_pvalue))
 print("Two-Sample T Test for Independence with unequal variances:\n--------------------")
 #print("10% to 30%:\n--------------------\nStatistic: {} \np-value: {}".format(statistic_10_20, pvalue_10_20))
 print("20% to 30%:\n--------------------\nStatistic: {} \np-value: {}".format(statistic_20_30, pvalue_20_30))
@@ -258,5 +308,3 @@ thirtydf.to_excel(writer, 'Sheet1')
 writer.save()
 
 #pd.DataFrame(list(zip(x_graph_list[1], y_graph_list[1], avgTemp_graph_list[1])), columns =['X', 'Y', 'Temperature'])
-
- 
