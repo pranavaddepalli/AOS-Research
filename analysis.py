@@ -29,7 +29,15 @@ raw_30_percent = np.genfromtxt(data_dir + '30pLines', delimiter=',')
 print("30% infill data has {} columns and {} rows.".format(np.size(raw_30_percent, axis=1), np.size(raw_30_percent, axis=0)))
 raw_30_percent = raw_30_percent
 
+#%% fix data
 
+raw_10_percent[raw_10_percent > 80] = 30
+raw_20_percent[raw_20_percent > 80] = 20
+raw_30_percent[raw_30_percent > 80] = 30
+raw_10_percent[raw_10_percent < 0] = 30
+raw_20_percent[raw_20_percent < 0] = 30
+raw_30_percent[raw_30_percent < 0] = 30
+raw_30_percent[:,-2] = raw_30_percent[:,-3] + 1
 
 #%% PROCESS RAW DATA
 
