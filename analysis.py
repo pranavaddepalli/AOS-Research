@@ -306,6 +306,7 @@ print("20% to 30%:\n--------------------\nStatistic: {} \np-value: {}".format(-1
 
 
 #%% PRINTING DATA
+'''
 import pandas as pd
 thirtydf = pd.DataFrame(gradients[2], columns =['X', 'Y', 'Mean Temperature', 'Gradient from Equilibrium', 'Angle'], dtype = float) 
 
@@ -314,3 +315,12 @@ thirtydf.to_excel(writer, 'Sheet1')
 writer.save()
 
 #pd.DataFrame(list(zip(x_graph_list[1], y_graph_list[1], avgTemp_graph_list[1])), columns =['X', 'Y', 'Temperature'])
+'''
+
+#%% REST OF THE VISUALIZATION
+import pandas as pd
+raw_twenty_df = pd.DataFrame(data=raw_20_percent)
+raw_twenty_df.columns = ['Thermistor 1', 'Thermistor 2', 'Thermistor 3', 'Thermistor 4', 'Thermistor 5', 'Thermistor 6', 'Thermistor 7', 'Thermistor 8']
+ax0 = raw_twenty_df.plot(title="Temperature over Time for 20% Infill", xlim=(0, 10000))
+ax0.set_xlabel("Time (s)")
+ax0.set_ylabel("Temperature (C)")
