@@ -7,10 +7,12 @@ Created on Sun May 19 12:59:39 2019
 import numpy as np 
 import os
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+''' unused imports
 
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.animation as animation
 from matplotlib.animation import FuncAnimation
+'''
 
 np.set_printoptions(precision=3, suppress=True)
 
@@ -20,12 +22,22 @@ print("Working Directory: {}. \nData Directory: {}".format(base_dir, data_dir))
 
 raw_10_percent = np.genfromtxt(data_dir + '10pLines', delimiter=',')
 print("10% infill data has {} columns and {} rows.".format(np.size(raw_10_percent, axis=1), np.size(raw_10_percent, axis=0)))
+raw_10_percent = raw_10_percent
 
-raw_20_percent = np.genfromtxt(data_dir + '20pLines', delimiter=',')[:, :8]
+raw_20_percent = np.genfromtxt(data_dir + '20pLines (1)', delimiter=',')[:, :8]
 print("20% infill data has {} columns and {} rows.".format(np.size(raw_20_percent, axis=1), np.size(raw_20_percent, axis=0)))
+raw_20_percent = raw_20_percent
 
 raw_30_percent = np.genfromtxt(data_dir + '30pLines', delimiter=',')
 print("30% infill data has {} columns and {} rows.".format(np.size(raw_30_percent, axis=1), np.size(raw_30_percent, axis=0)))
+raw_30_percent = raw_30_percent
+#%% fix data
+raw_10_percent[raw_10_percent > 200] = np.median(raw_10_percent)
+raw_20_percent[raw_20_percent > 200] = np.median(raw_20_percent)
+raw_30_percent[raw_30_percent > 200] = np.median(raw_30_percent)
+raw_10_percent[raw_10_percent < 0] = np.median(raw_10_percent)
+raw_20_percent[raw_20_percent < 0] = np.median(raw_20_percent)
+raw_30_percent[raw_30_percent < 0] = np.median(raw_30_percent)
 
 #%% PROCESS RAW DATA
 
@@ -196,19 +208,6 @@ plt.scatter(x_graph_list[1], y_graph_list[1], s=1)
 #VECTORS
 
 #origin = [equilibrium[0]], [equilibrium[1] ]
-vectors = np.array([list(a) for a in zip(x_graph_list[1], y_graph_list[1])])
-origin = [0], [0]
-soa = np.array([[equilibrium[0], equilibrium[1], x_graph_list[1][c_], y_graph_list[1][c_]] for c_ in range(0, len(x_graph_list[1]))])
-X, Y, U, V = zip(*soa)
-
-plt.plot(equilibrium[0], equilibrium[1], "or")
-plt.scatter(x_graph_list[1], y_graph_list[1], s=1)
-
-plt.quiver(X, Y, U, V, scale=1)
-plt.draw()
-plt.show()
-
-
 
 
 #%% centers
@@ -225,11 +224,16 @@ for GRAPHING_INFILL in range(0, 3) :
     ax.plot(equilibrium[0], equilibrium[1], "or")
     plt.ylabel("Y position (mm)")
     plt.xlabel("X position (mm)")
+    plt.xlim(0,12.5)
+    plt.ylim(0,15)
     plt.title("Temperature Centers for {}% infill".format(format((GRAPHING_INFILL + 1)*10)))
     
 
 
+
+
 plt.show()
+
 
 #soa = np.array([[equilibrium[0], equilibrium[1], gradients[0][0][0], gradients[0][0][1]]])
 #X, Y, U, V = zip(*soa)
@@ -288,14 +292,17 @@ ten_gradients = [value[3] for value in gradients[0] ]
 twenty_gradients = [value[3] for value in gradients[1] ]
 thirty_gradients = [value[3] for value in gradients[2] ]
 anova_statistic, anova_pvalue = stats.f_oneway(ten_gradients, twenty_gradients, thirty_gradients)
-statistic_20_30, pvalue_20_30 = stats.ttest_ind(twenty_gradients, thirty_gradients, equal_var=False)
-
 print("\nANOVA TEST:\n-------------------- \nStatistic: {} \np-value: {}\n".format(anova_statistic, anova_pvalue))
-print("Two-Sample T Test for Independence with unequal variances:\n--------------------")
-#print("10% to 30%:\n--------------------\nStatistic: {} \np-value: {}".format(statistic_10_20, pvalue_10_20))
-print("20% to 30%:\n--------------------\nStatistic: {} \np-value: {}".format(statistic_20_30, pvalue_20_30 ))
-#%% ML MODEL
+print("Mean of 10%: {} \nMean of 20%: {} \nMean of 30%: {}".format(np.mean(ten_gradients), np.mean(twenty_gradients), np.mean(thirty_gradients)))
 
+kw_statistic, kw_pvalue = stats.kruskal(ten_gradients, twenty_gradients, thirty_gradients)
+print("\nKruskal TEST:\n-------------------- \nStatistic: {} \np-value: {}\n".format(kw_statistic, kw_pvalue))
+
+statistic_10_20, pvalue_10_20 = stats.ttest_ind(ten_gradients, twenty_gradients, equal_var=False)
+statistic_20_30, pvalue_20_30 = stats.ttest_ind(twenty_gradients, thirty_gradients, equal_var=False)
+print("Two-Sample T Test for Independence with unequal variances:\n--------------------")
+print("10% to 20%:\n--------------------\nStatistic: {} \np-value: {}".format(statistic_10_20, pvalue_10_20))
+print("20% to 30%:\n--------------------\nStatistic: {} \np-value: {}".format(-1 * (statistic_20_30), pvalue_20_30 ))
 
 
 #%% PRINTING DATA
