@@ -84,20 +84,12 @@ for i in range(0,30, 10):
     print("Done!")
 
 #%% graphics for poster
-plt.plot(hm_t[1], raw_20_percent[:, 0])
-plt.plot(hm_t[1], raw_20_percent[:, 0])
-plt.plot(hm_t[1], raw_20_percent[:, 0])
-plt.plot(hm_t[1], raw_20_percent[:, 0])
-plt.plot(hm_t[1], raw_20_percent[:, 0])
-plt.plot(hm_t[1], raw_20_percent[:, 0])
-plt.plot(hm_t[1], raw_20_percent[:, 0])
-plt.plot(hm_t[1], raw_20_percent[:, 0])
 
 
 
 #%% HEAT MAP GENERATION
 ##HEAT MAP
-    '''
+'''
 from matplotlib import cm
 plt.style.use('classic')
 
@@ -149,10 +141,10 @@ def center(points):
     global equilibrium
     global x_graph_list
     global y_graph_list
-    weighted_mean_temp = sum((((((p[0] - equilibrium[0])**2) + 
-                                ((p[1] - equilibrium[1])**2))**0.5) 
+    weighted_mean_temp = sum((((((p[0])**2) + 
+                                ((p[1])**2))**0.5) 
                                 * p[2]) for p in points)    
-    tmpKieran = (sum(((((point[0] - equilibrium[0])**2) + ((point[1] - equilibrium[1])**2))**0.5) for point in points))
+    tmpKieran = (sum(((((point[0])**2) + ((point[1])**2))**0.5) for point in points))
     weighted_mean_temp = weighted_mean_temp / tmpKieran
     
     #weighted_mean_temp = sum((point[2] / ((point[0] - equilibrium[0])**2) + ((point[1] - equilibrium[0])**2)) for point in points)
@@ -201,13 +193,25 @@ plt.ylim(-0, 15)
 plt.scatter(x_graph_list[1], y_graph_list[1], s=1)
 '''
 #%%VISUALIZATION
+#VECTORS
+
+#origin = [equilibrium[0]], [equilibrium[1] ]
+vectors = np.array([list(a) for a in zip(x_graph_list[1], y_graph_list[1])])
+origin = [0], [0]
+soa = np.array([[equilibrium[0], equilibrium[1], x_graph_list[1][c_], y_graph_list[1][c_]] for c_ in range(0, len(x_graph_list[1]))])
+X, Y, U, V = zip(*soa)
+
+plt.plot(equilibrium[0], equilibrium[1], "or")
+plt.scatter(x_graph_list[1], y_graph_list[1], s=1)
+
+plt.quiver(X, Y, U, V, scale=1)
+plt.draw()
+plt.show()
 
 
 
 
-
-
-
+#%% centers
 # CENTERS
 figs = []
 
@@ -232,16 +236,7 @@ plt.show()
 #ax.quiver(X, Y, U, V, angles='xy', scale_units='xy', scale=1)
 
 
-#VECTORS
-'''
-for GRAPHING_INFILL in range(0, 3):
-    figs.append(plt.figure())
-    origin = [equilibrium[0]], [equilibrium[1]]
-    vectors = np.array( [ gradient[0], gradient[1] ] for gradient in gradients[GRAPHING_INFILL] )
-    plt.subplot(111)
-    ax = plt.gca()
- 
-'''
+
 
 # animation
 '''
@@ -298,7 +293,11 @@ statistic_20_30, pvalue_20_30 = stats.ttest_ind(twenty_gradients, thirty_gradien
 print("\nANOVA TEST:\n-------------------- \nStatistic: {} \np-value: {}\n".format(anova_statistic, anova_pvalue))
 print("Two-Sample T Test for Independence with unequal variances:\n--------------------")
 #print("10% to 30%:\n--------------------\nStatistic: {} \np-value: {}".format(statistic_10_20, pvalue_10_20))
-print("20% to 30%:\n--------------------\nStatistic: {} \np-value: {}".format(statistic_20_30, pvalue_20_30))
+print("20% to 30%:\n--------------------\nStatistic: {} \np-value: {}".format(statistic_20_30, pvalue_20_30 ))
+#%% ML MODEL
+
+
+
 #%% PRINTING DATA
 import pandas as pd
 thirtydf = pd.DataFrame(gradients[2], columns =['X', 'Y', 'Mean Temperature', 'Gradient from Equilibrium', 'Angle'], dtype = float) 
