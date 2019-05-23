@@ -39,6 +39,7 @@ raw_20_percent[raw_20_percent < 0] = 30
 raw_30_percent[raw_30_percent < 0] = 30
 raw_30_percent[:,-2] = raw_30_percent[:,-3] + 1
 
+
 #%% PROCESS RAW DATA
 
 def point(raw, row, col):
@@ -212,3 +213,14 @@ statistic_20_30, pvalue_20_30 = stats.ttest_ind(twenty_gradients, thirty_gradien
 print("Two-Sample T Test for Independence with unequal variances:\n--------------------")
 print("10% to 20%:\n--------------------\nStatistic: {} \np-value: {}".format(statistic_10_20, pvalue_10_20))
 print("20% to 30%:\n--------------------\nStatistic: {} \np-value: {}".format((statistic_20_30), pvalue_20_30 ))
+
+#%% EXTRACTING SAMPLE DATA
+'''
+thirtydf = pd.DataFrame(gradients[2]).head(100)
+twentydf = pd.DataFrame(gradients[1]).head(100)
+tendf = pd.DataFrame(gradients[0]).head(100)
+thirtydf.columns = twentydf.columns = tendf.columns = ['X (mm)', 'Y (mm)', 'Mean Temperature (C)', 'Gradient (C/mm)', 'Angle (deg)']
+tendf.to_excel('SampleGradients10.xlsx')
+twentydf.to_excel('SampleGradients20.xlsx')
+thirtydf.to_excel('SampleGradients30.xlsx')
+'''
